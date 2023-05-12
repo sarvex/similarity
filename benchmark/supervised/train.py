@@ -46,9 +46,9 @@ def run(config):
         print("shapes x:", x_train.shape, 'y:', y_train.shape)
 
         for lparams in dconf['losses']:
-            cprint("Training %s" % lparams['name'], 'green')
+            cprint(f"Training {lparams['name']}", 'green')
 
-            stub = "models/%s/%s_%s/" % (version, dataset_name, lparams['name'])
+            stub = f"models/{version}/{dataset_name}_{lparams['name']}/"
 
             # cleanup dir
             clean_dir(stub)
@@ -73,7 +73,7 @@ def run(config):
                                 callbacks=callbacks,
                                 validation_steps=val_steps)
             # save history
-            with open("%shistory.json" % stub, 'w') as o:
+            with open(f"{stub}history.json", 'w') as o:
                 o.write(json.dumps(history.history))
 
 

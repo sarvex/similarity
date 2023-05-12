@@ -102,10 +102,10 @@ class MultiShotMemorySampler(Sampler):
 
         # precompute information we need
         if not class_list:
-            self.class_list = list(set([int(e) for e in y]))
+            self.class_list = list({int(e) for e in y})
         else:
             # dedup in case user mess up and cast in case its a tensor
-            self.class_list = list(set([int(c) for c in class_list]))
+            self.class_list = list({int(c) for c in class_list})
 
         if classes_per_batch > len(self.class_list):
             raise ValueError("the value of classes_per_batch must be <= to the "

@@ -33,7 +33,7 @@ class DistanceMetric(Metric):
                  **kwargs):
 
         if not name:
-            name = "%s_%s" % (aggregate, anchor[:3])
+            name = f"{aggregate}_{anchor[:3]}"
         super().__init__(name=name, **kwargs)
 
         self.distance = distance_canonicalizer(distance)
@@ -67,18 +67,18 @@ class DistanceMetric(Metric):
         positive_mask, negative_mask = build_masks(labels, batch_size)
 
         if self.anchor == "positive":
-            if self.positive_mining_strategy == "hard":
-                distances, _ = masked_max(pairwise_distances, positive_mask)
-            else:
-                distances, _ = masked_min(pairwise_distances, positive_mask)
+            distances, _ = (
+                masked_max(pairwise_distances, positive_mask)
+                if self.positive_mining_strategy == "hard"
+                else masked_min(pairwise_distances, positive_mask)
+            )
+        elif self.negative_mining_strategy == 'hard':
+            distances, _ = masked_min(pairwise_distances, negative_mask)
         else:
-            if self.negative_mining_strategy == 'hard':
-                distances, _ = masked_min(pairwise_distances, negative_mask)
-            else:
-                distances, _ = masked_max(pairwise_distances, negative_mask)
+            distances, _ = masked_max(pairwise_distances, negative_mask)
 
         # reduce
-        if self.aggregate == 'mean' or self.aggregate == 'avg':
+        if self.aggregate in ['mean', 'avg']:
             aggregated_distances = tf.reduce_mean(distances)
         elif self.aggregate == 'max':
             aggregated_distances = tf.reduce_max(distances)

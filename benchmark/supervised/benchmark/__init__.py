@@ -5,7 +5,7 @@ import shutil
 
 
 def load_dataset(version, dataset_name, shard):
-    path = "datasets/%s/%s/%s.npz" % (version, dataset_name, shard)
+    path = f"datasets/{version}/{dataset_name}/{shard}.npz"
     d = np.load(path)
     return d['x'], d['y']
 

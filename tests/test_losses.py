@@ -34,7 +34,7 @@ def triplet_hard_loss_np(labels, embedding, margin, dist_func, soft=False):
                 pos_distances.append(pdist_matrix[i][j])
 
         # if there are no positive pairs, distance is 0
-        if len(pos_distances) == 0:
+        if not pos_distances:
             pos_distances.append(0)
 
         # Sort by distance.

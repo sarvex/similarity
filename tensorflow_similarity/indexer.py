@@ -178,13 +178,11 @@ class Indexer():
             FloatTensor: 1D Tensor that contains the actual embedding
         """
 
-        if isinstance(self.embedding_output, int):
-            # in multi-output: embedding is [output_num][0]
-            embedding: FloatTensor = prediction[self.embedding_output][0]
-        else:
-            # single output > return 1st element
-            embedding = prediction[0]
-        return embedding
+        return (
+            prediction[self.embedding_output][0]
+            if isinstance(self.embedding_output, int)
+            else prediction[0]
+        )
 
     def _get_embeddings(self, predictions: FloatTensor) -> FloatTensor:
         """Return the embedding vectors from a (multi-output) model prediction
@@ -197,12 +195,11 @@ class Indexer():
             Tensor: 2D Tensor (num_embeddings, embedding_value)
         """
 
-        if isinstance(self.embedding_output, int):
-            embeddings: FloatTensor = predictions[self.embedding_output]
-        else:
-            # needed for typing
-            embeddings = predictions
-        return embeddings
+        return (
+            predictions[self.embedding_output]
+            if isinstance(self.embedding_output, int)
+            else predictions
+        )
 
     def _cast_label(self, label: Optional[int]) -> Optional[int]:
         if label is not None:
@@ -298,16 +295,16 @@ class Indexer():
         nn_embeddings, labels, data = self.kv_store.batch_get(idxs)
 
         lookup_time = time() - start
-        lookups = []
-        for i in range(len(nn_embeddings)):
-            # ! casting is needed to avoid slowness down the line
-            lookups.append(Lookup(
+        lookups = [
+            Lookup(
                 rank=i + 1,
                 embedding=nn_embeddings[i],
                 distance=float(distances[i]),
                 label=self._cast_label(labels[i]),
-                data=data[i]
-                ))
+                data=data[i],
+            )
+            for i in range(len(nn_embeddings))
+        ]
         self._lookup_timings_buffer.append(lookup_time)
         self._stats['num_lookups'] += 1
         return lookups
@@ -349,16 +346,16 @@ class Indexer():
             distances = batch_distances[eidx]
 
             nn_embeddings, labels, data = self.kv_store.batch_get(lidxs)
-            lookups = []
-            for i in range(len(nn_embeddings)):
-                # ! casting is needed to avoid slowness down the line
-                lookups.append(Lookup(
+            lookups = [
+                Lookup(
                     rank=i + 1,
                     embedding=nn_embeddings[i],
                     distance=float(distances[i]),
                     label=self._cast_label(labels[i]),
-                    data=data[i]
-                ))
+                    data=data[i],
+                )
+                for i in range(len(nn_embeddings))
+            ]
             batch_lookups.append(lookups)
 
             if verbose:
@@ -477,16 +474,15 @@ class Indexer():
                 dtype='float32'
         )
 
-        results = self.evaluator.evaluate_classification(
+        return self.evaluator.evaluate_classification(
             query_labels=query_labels,
             lookup_labels=lookup_labels,
             lookup_distances=lookup_distances,
             distance_thresholds=thresholds,
             metrics=combined_metrics,
             matcher=matcher,
-            verbose=verbose)
-
-        return results
+            verbose=verbose,
+        )
 
     def calibrate(self,
                   predictions: FloatTensor,
@@ -569,9 +565,7 @@ class Indexer():
                 if metric_name not in headers:
                     headers.append(metric_name)
 
-            rows = []
-            for data in cutpoints:
-                rows.append([data[v] for v in headers])
+            rows = [[data[v] for v in headers] for data in cutpoints]
             print("\n", tabulate(rows, headers=headers))
 
         # store info for serialization purpose
@@ -642,11 +636,7 @@ class Indexer():
                     lookup_distances=lookup_distances)
 
             for label, distance in zip(pred_labels, pred_dist):
-                if distance <= distance_threshold:
-                    label = int(label)
-                else:
-                    label = no_match_label
-
+                label = int(label) if distance <= distance_threshold else no_match_label
                 matches[cp_name].append(label)
 
                 if verbose:
@@ -664,7 +654,7 @@ class Indexer():
             path: directory where to save the index
             compression: Store index data compressed. Defaults to True.
         """
-        path = str(path)
+        path = path
         # saving metadata
         metadata = {
             "size": self.size(),
@@ -792,8 +782,7 @@ class Indexer():
 
         print('\n[Performance]')
         rows = [['num lookups', stats['num_lookups']]]
-        for k, v in stats['query_performance'].items():
-            rows.append([k, v])
+        rows.extend([k, v] for k, v in stats['query_performance'].items())
         print(tabulate(rows))
 
     def to_data_frame(self, num_items: int = 0) -> PandasDataFrame:

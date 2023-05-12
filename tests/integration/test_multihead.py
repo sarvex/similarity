@@ -31,9 +31,7 @@ def generate_dataset(num_classes, num_examples_per_class, reps=4, outputs=1):
     # copy y if neededs
     y = tf.constant(y, dtype='int32')
     if outputs > 1:
-        ny = []
-        for _ in range(outputs):
-            ny.append(y)
+        ny = [y for _ in range(outputs)]
         y = ny
 
     return tf.constant(x, dtype='float32'), y

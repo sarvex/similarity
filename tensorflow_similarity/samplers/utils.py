@@ -49,9 +49,9 @@ def select_examples(
 
     # cast class_list if it exist to avoid slowness
     if class_list is not None:
-        class_list_int = set([int(c) for c in class_list])
+        class_list_int = {int(c) for c in class_list}
     else:
-        class_list_int = set([int(e) for e in y])
+        class_list_int = {int(e) for e in y}
 
     # Mapping class to idx
     index_per_class = defaultdict(list)
@@ -60,13 +60,7 @@ def select_examples(
     for idx in tqdm(range(len(x)), desc="filtering examples"):
         cl = cls[idx]  # need to cast tensor
 
-        # if user provided a class_list, check it's part of it.
-        if class_list is not None and cl in class_list_int:
-            index_per_class[cl].append(idx)
-        else:
-            # just add all class examples
-            index_per_class[cl].append(idx)
-
+        index_per_class[cl].append(idx)
     # restrict numbers of samples
     idxs = []
     for class_id in tqdm(class_list_int, desc="selecting classes"):

@@ -122,10 +122,7 @@ class Lookup:
             return False
         if not _optional_eq(self.embedding, other.embedding, _ndarray_eq):
             return False
-        if not _optional_eq(self.data, other.data, _tf_eq):
-            return False
-
-        return True
+        return bool(_optional_eq(self.data, other.data, _tf_eq))
 
 
 @dataclasses.dataclass

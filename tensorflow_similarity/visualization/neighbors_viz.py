@@ -60,10 +60,7 @@ def viz_neigbors_imgs(example: Tensor,
     for ax, nbg in zip(axs[1:], neighbors):
         val = _get_class_label(nbg.label, class_mapping)
         legend = f"{val} - {nbg.distance:.5f}"
-        if nbg.label == example_class:
-            color = cmap
-        else:
-            color = 'Reds'
+        color = cmap if nbg.label == example_class else 'Reds'
         ax.imshow(nbg.data, cmap=color)
         ax.set_title(legend)
         ax.set_xticks([])

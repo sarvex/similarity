@@ -28,9 +28,7 @@ def is_tensor_or_variable(x):
 
 def tf_cap_memory():
     "Avoid TF to hog memory before needing it"
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-
-    if gpus:
+    if gpus := tf.config.experimental.list_physical_devices('GPU'):
         for gpu in gpus:
             try:
                 tf.config.experimental.set_memory_growth(gpu, True)

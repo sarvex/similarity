@@ -108,7 +108,7 @@ class EvalCallback(Callback):
         if tb_logdir:
             tb_logdir = str(Path(tb_logdir) / 'index/')
             self.tb_writer = tf.summary.create_file_writer(tb_logdir)
-            print('TensorBoard logging enable in %s' % tb_logdir)
+            print(f'TensorBoard logging enable in {tb_logdir}')
         else:
             self.tb_writer = None
 
@@ -240,7 +240,7 @@ class SplitValidationLoss(Callback):
         if tb_logdir:
             tb_logdir = str(Path(tb_logdir) / 'index/')
             self.tb_writer = tf.summary.create_file_writer(tb_logdir)
-            print('TensorBoard logging enable in %s' % tb_logdir)
+            print(f'TensorBoard logging enable in {tb_logdir}')
         else:
             self.tb_writer = None
 
@@ -330,8 +330,7 @@ class SplitValidationLoss(Callback):
             mstr.append(f'{full_metric_name}: {float_val:0.4f}')
             if self.tb_writer:
                 with self.tb_writer.as_default():
-                    tf.summary.scalar(full_metric_name, float_val, step=epoch)
-
+                    tf.summary.scalar(full_metric_name, float_val, step=_)
         for metric_name, vals in unknown_results.items():
             float_val = vals[0]
             full_metric_name = f'{metric_name}_unknown_classes'
@@ -339,8 +338,7 @@ class SplitValidationLoss(Callback):
             mstr.append(f'{full_metric_name}: {float_val:0.4f}')
             if self.tb_writer:
                 with self.tb_writer.as_default():
-                    tf.summary.scalar(full_metric_name, float_val, step=epoch)
-
+                    tf.summary.scalar(full_metric_name, float_val, step=_)
         # reset the index to prevent users from accidently using this after the
         # callback
         self.model.reset_index()

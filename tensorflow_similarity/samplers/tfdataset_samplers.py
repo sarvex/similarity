@@ -125,8 +125,7 @@ class TFDatasetMultiShotMemorySampler(MultiShotMemorySampler):
                 raise ValueError("y_key not found - available features are:",
                                  str(ds_info.features.keys()))
 
-            pb = tqdm(total=ds_info.splits[split].num_examples,
-                      desc="converting %s" % split)
+            pb = tqdm(total=ds_info.splits[split].num_examples, desc=f"converting {split}")
 
             for e in ds:
                 x.append(e[x_key])

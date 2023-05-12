@@ -197,11 +197,7 @@ class SimilarityModel(tf.keras.Model):
         """
         # Fetching the distance used from the first loss if auto
         if distance == "auto":
-            if isinstance(loss, list):
-                metric_loss = loss[0]
-            else:
-                metric_loss = loss
-
+            metric_loss = loss[0] if isinstance(loss, list) else loss
             try:
                 distance = metric_loss.distance
             except AttributeError:
@@ -566,10 +562,7 @@ class SimilarityModel(tf.keras.Model):
         )
 
         # select which matches to return
-        if cutpoint == "all":  # returns all the cutpoints for eval purpose.
-            return matches
-        else:  # normal match behavior - returns a specific cut point
-            return matches[cutpoint]
+        return matches if cutpoint == "all" else matches[cutpoint]
 
     def evaluate_retrieval(
         self,
@@ -699,15 +692,13 @@ class SimilarityModel(tf.keras.Model):
             metrics.append(metric)
 
             res: Dict[str, Union[str, np.ndarray]] = {}
-            res.update(
-                self._index.evaluate_classification(
-                    predictions,
-                    y,
-                    [distance_threshold],
-                    metrics=metrics,
-                    matcher=matcher,
-                    k=k,
-                )
+            res |= self._index.evaluate_classification(
+                predictions,
+                y,
+                [distance_threshold],
+                metrics=metrics,
+                matcher=matcher,
+                k=k,
             )
             res["distance"] = tf.constant([distance_threshold])
             res["name"] = cp_name
@@ -723,9 +714,7 @@ class SimilarityModel(tf.keras.Model):
             for i in results["optimal"].keys():
                 if i not in headers:
                     headers.append(str(i))
-            rows = []
-            for data in results.values():
-                rows.append([data[v] for v in headers])
+            rows = [[data[v] for v in headers] for data in results.values()]
             print("\n [Summary]\n")
             print(tabulate(rows, headers=headers))
 

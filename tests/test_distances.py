@@ -45,9 +45,7 @@ def angular_distance_np(feature):
     # l2-normalize all features
     normed = feature / np.linalg.norm(feature, ord=2, axis=1, keepdims=True)
     cosine_similarity = normed @ normed.T
-    inverse_cos_sim = 1 - cosine_similarity
-
-    return inverse_cos_sim
+    return 1 - cosine_similarity
 
 
 def test_cosine_same():

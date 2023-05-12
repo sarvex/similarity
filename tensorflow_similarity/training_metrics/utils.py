@@ -32,11 +32,10 @@ def batch_class_ratio(sampler: Sampler, num_batches: int = 100) -> float:
     """
     ratio = 0
     for batch_count, (_, y) in enumerate(sampler):
-        if batch_count < num_batches:
-            batch_size = tf.shape(y)[0]
-            num_classes = tf.shape(tf.unique(y)[0])[0]
-            ratio += tf.math.divide(batch_size, num_classes)
-        else:
+        if batch_count >= num_batches:
             break
 
+        batch_size = tf.shape(y)[0]
+        num_classes = tf.shape(tf.unique(y)[0])[0]
+        ratio += tf.math.divide(batch_size, num_classes)
     return float(ratio/(batch_count+1))

@@ -60,12 +60,10 @@ class MetricLoss(tf.keras.losses.Loss):
         Returns:
             A Python dict containing the configuration of the loss.
         """
-        config = {}
-        for k, v in iter(self._fn_kwargs.items()):
-            if is_tensor_or_variable(v):
-                config[k] = tf.keras.backend.eval(v)
-            else:
-                config[k] = v
+        config = {
+            k: tf.keras.backend.eval(v) if is_tensor_or_variable(v) else v
+            for k, v in iter(self._fn_kwargs.items())
+        }
         config['name'] = self.name
 
         # FIXME: seems we can't pass reduction why? its not

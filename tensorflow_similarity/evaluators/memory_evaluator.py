@@ -365,11 +365,7 @@ class MemoryEvaluator(Evaluator):
         return CalibrationResults(cutpoints=cutpoints, thresholds=thresholds)
 
     def _is_lower(self, curr, prev, equal=False):
-        if equal:
-            return curr <= prev
-        return curr < prev
+        return curr <= prev if equal else curr < prev
 
     def _is_higher(self, curr, prev, equal=False):
-        if equal:
-            return curr >= prev
-        return curr > prev
+        return curr >= prev if equal else curr > prev

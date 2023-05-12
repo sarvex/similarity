@@ -116,15 +116,12 @@ def projector(embeddings: FloatTensor,
     cords = reducer.fit_transform(embeddings)
 
     # sample id
-    _idxs = [i for i in range(len(embeddings))]
+    _idxs = list(range(len(embeddings)))
 
     # labels?
     if labels is not None:
         # if labels are already names just use them.
-        if isinstance(labels[0], str):
-            _labels = labels
-        else:
-            _labels = [int(i) for i in labels]
+        _labels = labels if isinstance(labels[0], str) else [int(i) for i in labels]
     else:
         # treat each examples as its own class
         _labels = _idxs
@@ -136,8 +133,6 @@ def projector(embeddings: FloatTensor,
         _labels_txt = [str(i) for i in _labels]
 
     class_list = sorted(set(_labels_txt))
-    num_classes = len(class_list)
-
     # generate data
     data = dict(
         id=_idxs,
@@ -151,6 +146,8 @@ def projector(embeddings: FloatTensor,
     if labels is not None and colorize:
         # generate colors
         colors = {}
+        num_classes = len(class_list)
+
         for idx, c in enumerate(
                 distinctipy.get_colors(num_classes,
                                        pastel_factor=pastel_factor)):
@@ -177,7 +174,7 @@ def projector(embeddings: FloatTensor,
     if tooltips_info:
         for k, v in tooltips_info.items():
             data[k] = v
-            tooltips += "%s:@%s <br>" % (k, k)
+            tooltips += f"{k}:@{k} <br>"
 
     tooltips += 'Class:@labels_txt <br>ID:@id </div>'
 

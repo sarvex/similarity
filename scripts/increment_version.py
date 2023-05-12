@@ -26,10 +26,7 @@ def increment_dev_version(previous_version):
     # Split and increment dev version
     main_version, dev_version = previous_version.split(delim)
     dev_version = int(dev_version) + 1
-    # Construct new version
-    new_version = f"{main_version}{delim}{dev_version}"
-
-    return new_version
+    return f"{main_version}{delim}{dev_version}"
 
 
 def update_version(rel_path):
@@ -56,6 +53,6 @@ if __name__ == "__main__":
     # Assumes we are in the scripts/ dir
     new_version = update_version(version_path)
 
-    os.system(f"git add -u")
+    os.system("git add -u")
     os.system(f"git commit -m '[nightly] Increase version to {new_version}'")
     os.system("git push")

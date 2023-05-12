@@ -29,7 +29,7 @@ def test_eval_init_defaults():
     assert tf.math.reduce_all(callback.target_labels == target_labels)
     assert callback.distance == 'cosine'
     assert isinstance(callback.evaluator, MemoryEvaluator)
-    assert {'binary_accuracy', 'f1score'} == set([m.name for m in callback.metrics])
+    assert {'binary_accuracy', 'f1score'} == {m.name for m in callback.metrics}
     assert callback.k == 1
     assert tf.math.reduce_all(
         callback.distance_thresholds == tf.constant([math.inf]))
@@ -69,7 +69,7 @@ def test_eval_init(tmp_path):
     assert tf.math.reduce_all(callback.target_labels == target_labels)
     assert callback.distance == 'l2'
     assert isinstance(callback.evaluator, MemoryEvaluator)
-    assert {'recall'} == set([m.name for m in callback.metrics])
+    assert {'recall'} == {m.name for m in callback.metrics}
     assert callback.k == 11
     assert tf.math.reduce_all(
         callback.distance_thresholds == distance_thresholds)
@@ -136,7 +136,7 @@ def test_split_val_init_defaults():
     assert tf.math.reduce_all(callback.target_labels == target_labels)
     assert callback.distance == 'cosine'
     assert isinstance(callback.evaluator, MemoryEvaluator)
-    assert {'binary_accuracy', 'f1score'} == set([m.name for m in callback.metrics])
+    assert {'binary_accuracy', 'f1score'} == {m.name for m in callback.metrics}
     assert callback.k == 1
     assert tf.math.reduce_all(
         callback.distance_thresholds == tf.constant([math.inf]))
@@ -185,7 +185,7 @@ def test_split_val_init(tmp_path):
     assert tf.math.reduce_all(callback.target_labels == target_labels)
     assert callback.distance == 'l2'
     assert isinstance(callback.evaluator, MemoryEvaluator)
-    assert {'recall'} == set([m.name for m in callback.metrics])
+    assert {'recall'} == {m.name for m in callback.metrics}
     assert callback.k == 11
     assert tf.math.reduce_all(
         callback.distance_thresholds == distance_thresholds)

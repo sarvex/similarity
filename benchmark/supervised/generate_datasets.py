@@ -50,8 +50,7 @@ def run(config):
                 raise ValueError("y_key not found - available features are:",
                                  str(ds_info.features.keys()))
 
-            pb = tqdm(total=ds_info.splits[split].num_examples,
-                      desc="Merging %s" % split)
+            pb = tqdm(total=ds_info.splits[split].num_examples, desc=f"Merging {split}")
 
             for e in ds:
                 x.append(e[x_key])
@@ -60,10 +59,7 @@ def run(config):
             pb.close()
 
     cprint("|-Resize", 'blue')
-    x_resized = []
-    for e in tqdm(x, desc="resizing"):
-        x_resized.append(resize(e, img_size))
-
+    x_resized = [resize(e, img_size) for e in tqdm(x, desc="resizing")]
     cprint("|-Partition", 'green')
     ds_index = defaultdict(list)
     ds_query = defaultdict(list)
@@ -80,13 +76,12 @@ def run(config):
             ds_index[cl].append(e)
         elif len(ds_query[cl]) < query_shots:
             ds_query[cl].append(e)
+        elif cl in train_cls:
+            x_train.append(e)
+            y_train.append(cl)
         else:
-            if cl in train_cls:
-                x_train.append(e)
-                y_train.append(cl)
-            else:
-                x_test.append(e)
-                y_test.append(cl)
+            x_test.append(e)
+            y_test.append(cl)
 
     # flatten the index
     x_index = []
@@ -126,8 +121,8 @@ def run(config):
     print(" |-query unseen", len(x_unseen_queries), len(y_unseen_queries))
 
     # save
-    fpath = "datasets/%s/%s/" % (version, dataset_name)
-    cprint("Save files in %s" % fpath, "blue")
+    fpath = f"datasets/{version}/{dataset_name}/"
+    cprint(f"Save files in {fpath}", "blue")
     clean_dir(fpath)
 
     files = [['train', x_train, y_train],
@@ -136,8 +131,8 @@ def run(config):
              ['unseen_queries', x_unseen_queries, y_unseen_queries],
              ['seen_queries', x_seen_queries, y_seen_queries]]
     for f in files:
-        cprint("|-saving %s" % f[0], 'magenta')
-        fname = "%s%s.npz" % (fpath, f[0])
+        cprint(f"|-saving {f[0]}", 'magenta')
+        fname = f"{fpath}{f[0]}.npz"
         np.savez(fname, x=f[1], y=f[2])
     info = {
         "dataset": dataset_name,
@@ -158,7 +153,7 @@ def run(config):
             "seen_queries": len(x_seen_queries)
         }
     }
-    with open("%sinfo.json" % fpath, 'w') as o:
+    with open(f"{fpath}info.json", 'w') as o:
         o.write(json.dumps(info))
 
 

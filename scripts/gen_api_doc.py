@@ -56,7 +56,7 @@ PROJECT_FULL_NAME = 'TensorFlow Similarity'
 
 def replace_in_file(fname, replacements):
     "replace content in file"
-    cprint('|-Patching %s' % fname, 'cyan')
+    cprint(f'|-Patching {fname}', 'cyan')
     content = open(fname).read()
     os.unlink(fname)
 
@@ -99,11 +99,7 @@ def replace_in_file(fname, replacements):
 
             body.append(l)
 
-    #print(head)
-
-    content = "\n".join(head)
-    content += "\n".join(body)
-
+    content = "\n".join(head) + "\n".join(body)
     with open(fname, 'w+') as f:
         f.write(content)
 
@@ -162,7 +158,7 @@ def main(_):
     if outpath.exists():
         shutil.rmtree(OUTDIR)
     outpath.mkdir(parents=True)
-    cprint('output dir: %s' % OUTDIR, 'green')
+    cprint(f'output dir: {OUTDIR}', 'green')
 
     # generate
     gen_api_docs()
@@ -171,8 +167,8 @@ def main(_):
     cprint('Fixing documentation', 'magenta')
 
     cprint("rename main file to md")
-    mfname = OUTDIR + 'README.md'
-    shutil.move(OUTDIR + 'TFSimilarity.md', mfname)
+    mfname = f'{OUTDIR}README.md'
+    shutil.move(f'{OUTDIR}TFSimilarity.md', mfname)
 
     reps = [
         [

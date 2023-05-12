@@ -32,7 +32,6 @@ class MemoryStore(Store):
         self.embeddings: List[FloatTensor] = []
         self.data: List[Optional[Tensor]] = []
         self.num_items: int = 0
-        pass
 
     def add(self,
             embedding: FloatTensor,

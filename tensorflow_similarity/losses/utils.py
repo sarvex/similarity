@@ -80,7 +80,11 @@ def negative_distances(negative_mining_strategy: str,
       A Tuple of Tensors containing the negative distance values
       and the index for each example.
     """
-    if negative_mining_strategy == 'hard':
+    if negative_mining_strategy == 'easy':
+        # find the maximal distance between negative labels
+        negative_distances, neg_idxs = (
+                masked_max(distances, negative_mask))
+    elif negative_mining_strategy == 'hard':
         # find the *non-zero* minimal distance between negative labels
         negative_distances, neg_idxs = (
                 masked_min(distances, negative_mask))
@@ -102,10 +106,6 @@ def negative_distances(negative_mining_strategy: str,
         negative_distances, neg_idxs = (
                 masked_min(distances, semi_hard_mask))
 
-    elif negative_mining_strategy == 'easy':
-        # find the maximal distance between negative labels
-        negative_distances, neg_idxs = (
-                masked_max(distances, negative_mask))
     else:
         raise ValueError('Invalid negative mining strategy')
 

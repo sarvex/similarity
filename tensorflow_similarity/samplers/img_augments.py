@@ -288,7 +288,7 @@ def cutout(image: tf.Tensor, pad_size: int, replace: int = 0) -> tf.Tensor:
     An image Tensor that is of type uint8.
   """
   if image.shape.rank not in [3, 4]:
-    raise ValueError('Bad image rank: {}'.format(image.shape.rank))
+    raise ValueError(f'Bad image rank: {image.shape.rank}')
 
   if image.shape.rank == 4:
     return cutout_video(image, replace=replace)
@@ -591,7 +591,7 @@ def sharpness(image: tf.Tensor, factor: float) -> tf.Tensor:
     ]
     degenerate = tf.concat(degenerates, -1)
   else:
-    raise ValueError('Bad image rank: {}'.format(image.shape.rank))
+    raise ValueError(f'Bad image rank: {image.shape.rank}')
   degenerate = tf.clip_by_value(degenerate, 0.0, 255.0)
   degenerate = tf.squeeze(tf.cast(degenerate, tf.uint8), [0])
 
@@ -658,8 +658,7 @@ def wrap(image: tf.Tensor) -> tf.Tensor:
   """Returns 'image' with an extra channel set to all 1s."""
   shape = tf.shape(image)
   extended_channel = tf.expand_dims(tf.ones(shape[:-1], image.dtype), -1)
-  extended = tf.concat([image, extended_channel], axis=-1)
-  return extended
+  return tf.concat([image, extended_channel], axis=-1)
 
 
 def unwrap(image: tf.Tensor, replace: int) -> tf.Tensor:
@@ -706,8 +705,7 @@ def unwrap(image: tf.Tensor, replace: int) -> tf.Tensor:
 def _randomly_negate_tensor(tensor):
   """With 50% prob turn the tensor negative."""
   should_flip = tf.cast(tf.floor(tf.random.uniform([]) + 0.5), tf.bool)
-  final_tensor = tf.cond(should_flip, lambda: tensor, lambda: -tensor)
-  return final_tensor
+  return tf.cond(should_flip, lambda: tensor, lambda: -tensor)
 
 
 def _rotate_level_to_arg(level: float):
@@ -737,7 +735,7 @@ def _shear_level_to_arg(level: float):
 
 
 def _translate_level_to_arg(level: float, translate_const: float):
-  level = (level / _MAX_LEVEL) * float(translate_const)
+  level = level / _MAX_LEVEL * translate_const
   # Flip level to negative with 50% chance.
   level = _randomly_negate_tensor(level)
   return (level,)
@@ -754,9 +752,7 @@ def _apply_func_with_prob(func: Any, image: tf.Tensor, args: Any, prob: float):
   # Apply the function with probability `prob`.
   should_apply_op = tf.cast(
       tf.floor(tf.random.uniform([], dtype=tf.float32) + prob), tf.bool)
-  augmented_image = tf.cond(should_apply_op, lambda: func(image, *args),
-                            lambda: image)
-  return augmented_image
+  return tf.cond(should_apply_op, lambda: func(image, *args), lambda: image)
 
 
 def select_and_apply_random_policy(policies: Any, image: tf.Tensor):
@@ -812,7 +808,7 @@ def level_to_arg(cutout_const: float, translate_const: float):
   cutout_arg = lambda level: _mult_to_arg(level, cutout_const)
   translate_arg = lambda level: _translate_level_to_arg(level, translate_const)
 
-  args = {
+  return {
       'AutoContrast': no_arg,
       'Equalize': no_arg,
       'Invert': no_arg,
@@ -830,7 +826,6 @@ def level_to_arg(cutout_const: float, translate_const: float):
       'TranslateX': translate_arg,
       'TranslateY': translate_arg,
   }
-  return args
 
 
 def _parse_policy_info(name: Text,
@@ -918,8 +913,8 @@ class AutoAugment(ImageAugment):
     super(AutoAugment, self).__init__()
 
     self.augmentation_name = augmentation_name
-    self.cutout_const = float(cutout_const)
-    self.translate_const = float(translate_const)
+    self.cutout_const = cutout_const
+    self.translate_const = translate_const
     self.available_policies = {
         'v0': self.policy_v0(),
         'test': self.policy_test(),
@@ -929,16 +924,15 @@ class AutoAugment(ImageAugment):
         'reduced_imagenet': self.policy_reduced_imagenet(),
     }
 
-    if not policies:
-      if augmentation_name not in self.available_policies:
-        raise ValueError(
-            'Invalid augmentation_name: {}'.format(augmentation_name))
-
-      self.policies = self.available_policies[augmentation_name]
-
-    else:
+    if policies:
       self._check_policy_shape(policies)
       self.policies = policies
+
+    elif augmentation_name not in self.available_policies:
+      raise ValueError(f'Invalid augmentation_name: {augmentation_name}')
+
+    else:
+      self.policies = self.available_policies[augmentation_name]
 
   def _check_policy_shape(self, policies):
     """Checks dimension and shape of the custom policy.
@@ -952,8 +946,9 @@ class AutoAugment(ImageAugment):
     """
     in_shape = np.array(policies).shape
     if len(in_shape) != 3 or in_shape[-1:] != (3,):
-      raise ValueError('Wrong shape detected for custom policy. Expected '
-                       '(:, :, 3) but got {}.'.format(in_shape))
+      raise ValueError(
+          f'Wrong shape detected for custom policy. Expected (:, :, 3) but got {in_shape}.'
+      )
 
   def distort(self, image: tf.Tensor) -> tf.Tensor:
     """Applies the AutoAugment policy to `image`.
@@ -1027,7 +1022,7 @@ class AutoAugment(ImageAugment):
       the policy.
     """
 
-    policy = [
+    return [
         [('Equalize', 0.8, 1), ('ShearY', 0.8, 4)],
         [('Color', 0.4, 9), ('Equalize', 0.6, 3)],
         [('Color', 0.4, 1), ('Rotate', 0.6, 8)],
@@ -1054,7 +1049,6 @@ class AutoAugment(ImageAugment):
         [('Solarize', 0.6, 8), ('Equalize', 0.6, 1)],
         [('Color', 0.8, 6), ('Rotate', 0.4, 5)],
     ]
-    return policy
 
   @staticmethod
   def policy_reduced_cifar10():
@@ -1069,7 +1063,7 @@ class AutoAugment(ImageAugment):
     Returns:
       the policy.
     """
-    policy = [
+    return [
         [('Invert', 0.1, 7), ('Contrast', 0.2, 6)],
         [('Rotate', 0.7, 2), ('TranslateX', 0.3, 9)],
         [('Sharpness', 0.8, 1), ('Sharpness', 0.9, 3)],
@@ -1096,7 +1090,6 @@ class AutoAugment(ImageAugment):
         [('Equalize', 0.8, 8), ('Invert', 0.1, 3)],
         [('TranslateY', 0.7, 9), ('AutoContrast', 0.9, 1)],
     ]
-    return policy
 
   @staticmethod
   def policy_svhn():
@@ -1111,7 +1104,7 @@ class AutoAugment(ImageAugment):
     Returns:
       the policy.
     """
-    policy = [
+    return [
         [('ShearX', 0.9, 4), ('Invert', 0.2, 3)],
         [('ShearY', 0.9, 8), ('Invert', 0.7, 5)],
         [('Equalize', 0.6, 5), ('Solarize', 0.6, 6)],
@@ -1138,7 +1131,6 @@ class AutoAugment(ImageAugment):
         [('ShearY', 0.8, 5), ('AutoContrast', 0.7, 3)],
         [('ShearX', 0.7, 2), ('Invert', 0.1, 5)],
     ]
-    return policy
 
   @staticmethod
   def policy_reduced_imagenet():
@@ -1153,7 +1145,7 @@ class AutoAugment(ImageAugment):
     Returns:
       the policy.
     """
-    policy = [
+    return [
         [('Posterize', 0.4, 8), ('Rotate', 0.6, 9)],
         [('Solarize', 0.6, 5), ('AutoContrast', 0.6, 5)],
         [('Equalize', 0.8, 8), ('Equalize', 0.6, 3)],
@@ -1178,15 +1170,14 @@ class AutoAugment(ImageAugment):
         [('Solarize', 0.6, 5), ('AutoContrast', 0.6, 5)],
         [('Invert', 0.6, 4), ('Equalize', 1.0, 8)],
         [('Color', 0.6, 4), ('Contrast', 1.0, 8)],
-        [('Equalize', 0.8, 8), ('Equalize', 0.6, 3)]
+        [('Equalize', 0.8, 8), ('Equalize', 0.6, 3)],
     ]
-    return policy
 
   @staticmethod
   def policy_simple():
     """Same as `policy_v0`, except with custom ops removed."""
 
-    policy = [
+    return [
         [('Color', 0.4, 9), ('Equalize', 0.6, 3)],
         [('Solarize', 0.8, 3), ('Equalize', 0.4, 7)],
         [('Solarize', 0.4, 2), ('Solarize', 0.6, 2)],
@@ -1201,15 +1192,13 @@ class AutoAugment(ImageAugment):
         [('Posterize', 0.8, 2), ('Solarize', 0.6, 10)],
         [('Solarize', 0.6, 8), ('Equalize', 0.6, 1)],
     ]
-    return policy
 
   @staticmethod
   def policy_test():
     """Autoaugment test policy for debugging."""
-    policy = [
+    return [
         [('TranslateX', 1.0, 4), ('Equalize', 1.0, 10)],
     ]
-    return policy
 
 
 class RandAugment(ImageAugment):
@@ -1246,9 +1235,9 @@ class RandAugment(ImageAugment):
     super(RandAugment, self).__init__()
 
     self.num_layers = num_layers
-    self.magnitude = float(magnitude)
-    self.cutout_const = float(cutout_const)
-    self.translate_const = float(translate_const)
+    self.magnitude = magnitude
+    self.cutout_const = cutout_const
+    self.translate_const = translate_const
     self.prob_to_apply = (
         float(prob_to_apply) if prob_to_apply is not None else None)
     self.available_ops = [
@@ -1357,8 +1346,8 @@ class RandomErasing(ImageAugment):
         rectangle that fulfills constraint. Defaults to 10.
     """
     self._probability = probability
-    self._min_area = float(min_area)
-    self._max_area = float(max_area)
+    self._min_area = min_area
+    self._max_area = max_area
     self._min_log_aspect = math.log(min_aspect)
     self._max_log_aspect = math.log(max_aspect or 1 / min_aspect)
     self._min_count = min_count
@@ -1574,9 +1563,10 @@ class MixupAndCutmix:
     off_value = self.label_smoothing / self.num_classes
     on_value = 1. - self.label_smoothing + off_value
 
-    smooth_labels = tf.one_hot(
-        labels, self.num_classes, on_value=on_value, off_value=off_value)
-    return smooth_labels
+    return tf.one_hot(labels,
+                      self.num_classes,
+                      on_value=on_value,
+                      off_value=off_value)
 
   def _update_labels(self, images: tf.Tensor, labels: tf.Tensor,
                      lam: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:

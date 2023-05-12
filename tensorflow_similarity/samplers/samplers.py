@@ -88,7 +88,7 @@ class Sampler(Sequence, metaclass=abc.ABCMeta):
         self.steps_per_epoch = steps_per_epoch
         self.augmenter = augmenter
         self.warmup = warmup
-        self.is_warmup = True if warmup else False
+        self.is_warmup = bool(warmup)
 
         # Tell the users what to expect as they might be unsure what the batch
         # size will be

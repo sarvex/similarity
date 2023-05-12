@@ -167,7 +167,7 @@ class NMSLibSearch(Search):
     def _build(self, verbose=0):
         """Build the index this is need to take into account the new points
         """
-        show = True if verbose else False
+        show = bool(verbose)
         self._search_index.createIndex(print_progress=show)
 
     def __make_fname(self, path):

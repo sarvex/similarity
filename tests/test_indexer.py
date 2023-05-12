@@ -198,9 +198,6 @@ def test_single_vs_batch_ops():
     indexer.batch_add(data)
     batch_results = indexer.batch_lookup(data, k=K)
 
-    single_results = []
-    for d in data:
-        single_results.append(indexer.single_lookup([d], k=K))
-
+    single_results = [indexer.single_lookup([d], k=K) for d in data]
     for idx in range(len(single_results)):
         assert single_results[idx][0].label == batch_results[idx][0].label

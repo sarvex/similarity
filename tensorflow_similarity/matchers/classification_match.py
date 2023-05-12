@@ -48,7 +48,7 @@ class ClassificationMatch(ABC):
         return self.name
 
     def __repr__(self) -> str:
-        return "%s:%s" % (self.canonical_name, self.name)
+        return f"{self.canonical_name}:{self.name}"
 
     def get_config(self):
         return {

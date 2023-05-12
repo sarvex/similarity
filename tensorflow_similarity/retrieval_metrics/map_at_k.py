@@ -123,27 +123,26 @@ class MapAtK(RetrievalMetric):
         p_at_k = tf.math.divide(tp, tf.range(1, self.k + 1, dtype="float"))
         p_at_k = tf.math.multiply(k_slice, p_at_k)
 
-        if self.average == "micro":
-            table = tf.lookup.StaticHashTable(
-                tf.lookup.KeyValueTensorInitializer(
-                    list(self.r.keys()),
-                    list(self.r.values()),
-                    key_dtype=tf.int32,
-                    value_dtype=tf.int32,
-                ),
-                default_value=-1,
-            )
-            class_counts = table.lookup(query_labels)
-            avg_p_at_k = tf.math.divide(
-                tf.math.reduce_sum(p_at_k, axis=1),
-                tf.cast(class_counts, dtype="float"),
-            )
-
-            avg_p_at_k = tf.math.reduce_mean(avg_p_at_k)
-        else:
+        if self.average != "micro":
             raise ValueError(
                 f"{self.average} is not a supported average option"
             )
 
+        table = tf.lookup.StaticHashTable(
+            tf.lookup.KeyValueTensorInitializer(
+                list(self.r.keys()),
+                list(self.r.values()),
+                key_dtype=tf.int32,
+                value_dtype=tf.int32,
+            ),
+            default_value=-1,
+        )
+        class_counts = table.lookup(query_labels)
+        avg_p_at_k = tf.math.divide(
+            tf.math.reduce_sum(p_at_k, axis=1),
+            tf.cast(class_counts, dtype="float"),
+        )
+
+        avg_p_at_k = tf.math.reduce_mean(avg_p_at_k)
         result: FloatTensor = avg_p_at_k
         return result
